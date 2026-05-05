@@ -6,7 +6,7 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const express = require('express');
 
-// ===== WEB SERVER (FOR RENDER) =====
+// ===== WEB SERVER (RENDER KEEP ALIVE) =====
 const app = express();
 app.get('/', (req, res) => res.send('Bot Running'));
 app.listen(3000);
@@ -27,20 +27,21 @@ const prefix = ".";
 const TOKEN = process.env.TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
 
-// ===== CHANGE THESE =====
+// ===== YOUR CONFIG (ALREADY FILLED BY YOU) =====
 const STAFF_ROLE = "1443529641317892197";
 const LOG_CHANNEL_ID = "1501142586788675686";
-const WELCOME_CHANNEL = "1443404889894948974";
+const WELCOME_CHANNEL_ID = "1443404889894948974";
 const UPI_ID = "bossakhil53@okicici";
 const STORE_NAME = "Royal Store";
 const GIF_URL = "https://media1.tenor.com/m/TR0cAewt72UAAAAC/the-avengers-marvel.gif";
-// =======================
 
 // ===== STAFF CHECK =====
 function isStaff(member) {
+  if (!member) return false;
   return member.roles.cache.has(STAFF_ROLE);
 }
 
+// ===== READY =====
 client.once("ready", () => {
   console.log(`Logged in as ${client.user.tag}`);
 });
@@ -54,30 +55,32 @@ client.on("messageCreate", async (msg) => {
   const args = msg.content.slice(prefix.length).trim().split(/ +/);
   const cmd = args.shift().toLowerCase();
 
+  // SAY
   if (cmd === "say") {
     msg.delete().catch(()=>{});
     msg.channel.send(args.join(" "));
   }
 
+  // QR
   if (cmd === "qr") {
-  const amount = args[0];
-  if (!amount) return msg.reply("Enter amount");
+    const amount = args[0];
+    if (!amount) return msg.reply("Enter amount");
 
-  try {
-    const upi = `upi://pay?pa=${UPI_ID}&pn=${STORE_NAME}&am=${amount}&cu=INR`;
+    try {
+      const upi = `upi://pay?pa=${UPI_ID}&pn=${STORE_NAME}&am=${amount}&cu=INR`;
+      const qr = await QRCode.toDataURL(upi);
 
-    const qr = await QRCode.toDataURL(upi);
-
-    msg.channel.send({
-      content: `💰 Pay ₹${amount}`,
-      files: [qr]
-    });
-  } catch (err) {
-    console.error(err);
-    msg.reply("QR generation failed");
+      msg.channel.send({
+        content: `💰 Pay ₹${amount}`,
+        files: [qr]
+      });
+    } catch (err) {
+      console.error(err);
+      msg.reply("QR generation failed");
+    }
   }
-  }
 
+  // SERVER INFO
   if (cmd === "serverinfo") {
     msg.channel.send({
       embeds: [{
@@ -104,46 +107,92 @@ client.on("interactionCreate", async interaction => {
 
     const filePath = `invoice_${Date.now()}.pdf`;
 
-const doc = new PDFDocument({ margin: 40 });
-const stream = fs.createWriteStream(filePath);
+    const doc = new PDFDocument({ margin: 40 });
+    const stream = fs.createWriteStream(filePath);
 
-doc.pipe(stream);
+    doc.pipe(stream);
 
-// DESIGN
-doc.fontSize(22).fillColor("#4F46E5").text(STORE_NAME);
-doc.moveDown();
+    // DESIGN
+    doc.fontSize(22).fillColor("#4F46E5").text(STORE_NAME);
+    doc.moveDown();
 
-doc.fontSize(18).fillColor("black").text("INVOICE");
-doc.moveDown();
+    doc.fontSize(18).fillColor("black").text("INVOICE");
+    doc.moveDown();
 
-doc.text(`Buyer: ${buyer.username}`);
-doc.text(`Product: ${product}`);
-doc.text(`Amount: ₹${amount}`);
-doc.text(`Status: PAID`);
+    doc.text(`Buyer: ${buyer.username}`);
+    doc.text(`Product: ${product}`);
+    doc.text(`Amount: ₹${amount}`);
+    doc.text(`Status: PAID`);
 
-doc.end();
+    doc.end();
 
-// WAIT FOR FILE
-await new Promise(resolve => stream.on("finish", resolve));
+    // WAIT FOR FILE
+    await new Promise(resolve => stream.on("finish", resolve));
 
-// DM
-try {
-  await buyer.send({
-    content: "🧾 Your Invoice",
-    files: [filePath]
+    // DM USER
+    try {
+      await buyer.send({
+        content: "🧾 Your Invoice",
+        files: [filePath]
+      });
+    } catch (err) {
+      console.log("DM failed:", err);
+      await interaction.reply({ content: "❌ Could not DM user", ephemeral: true });
+      return;
+    }
+
+    // LOG CHANNEL
+    const logChannel = interaction.guild.channels.cache.get(LOG_CHANNEL_ID);
+    if (logChannel) {
+      logChannel.send({
+        content: `Invoice for ${buyer}`,
+        files: [filePath]
+      });
+    }
+
+    // FINAL RESPONSE
+    await interaction.reply({ content: "✅ Invoice Sent", ephemeral: true });
+  }
+});
+
+// ===== WELCOME SYSTEM =====
+client.on("guildMemberAdd", member => {
+  const channel = member.guild.channels.cache.get(WELCOME_CHANNEL_ID);
+  if (!channel) return;
+
+  channel.send({
+    embeds: [{
+      title: `Welcome to ${STORE_NAME}`,
+      description: `${member}\nMembers: ${member.guild.memberCount}`,
+      image: { url: GIF_URL }
+    }]
   });
-} catch (err) {
-  console.log("DM failed:", err);
-}
 
-// LOG CHANNEL
-const logChannel = interaction.guild.channels.cache.get(LOG_CHANNEL_ID);
+  member.send(`Welcome to ${STORE_NAME}`);
+});
 
-if (logChannel) {
-  logChannel.send({
-    content: `Invoice for ${buyer}`,
-    files: [filePath]
-  });
+// ===== REGISTER SLASH =====
+const commands = [
+  new SlashCommandBuilder()
+    .setName("give_invoice")
+    .setDescription("Generate Invoice")
+    .addUserOption(opt => opt.setName("buyer").setDescription("Buyer").setRequired(true))
+    .addStringOption(opt => opt.setName("product").setDescription("Product").setRequired(true))
+    .addStringOption(opt => opt.setName("amount").setDescription("Amount").setRequired(true))
+].map(cmd => cmd.toJSON());
+
+const rest = new REST({ version: '10' }).setToken(TOKEN);
+
+(async () => {
+  try {
+    await rest.put(Routes.applicationCommands(CLIENT_ID), { body: commands });
+    console.log("Slash command registered");
+  } catch (error) {
+    console.error(error);
+  }
+})();
+
+client.login(TOKEN);  });
 }
 
 await interaction.reply({ content: "✅ Invoice Sent", ephemeral: true }); true });
