@@ -165,16 +165,26 @@ const commands = [
   new SlashCommandBuilder()
     .setName("give_invoice")
     .setDescription("Generate Invoice")
-    .addUserOption(opt => opt.setName("buyer").setRequired(true))
-    .addStringOption(opt => opt.setName("product").setRequired(true))
-    .addStringOption(opt => opt.setName("amount").setRequired(true))
+
+    .addUserOption(opt =>
+      opt.setName("buyer")
+         .setDescription("Select buyer")
+         .setRequired(true)
+    )
+
+    .addStringOption(opt =>
+      opt.setName("product")
+         .setDescription("Enter product name")
+         .setRequired(true)
+    )
+
+    .addStringOption(opt =>
+      opt.setName("amount")
+         .setDescription("Enter amount")
+         .setRequired(true)
+    )
+
 ].map(cmd => cmd.toJSON());
-
-const rest = new REST({ version: '10' }).setToken(TOKEN);
-
-(async () => {
-  await rest.put(Routes.applicationCommands(CLIENT_ID), { body: commands });
-})();
 
 // ===== LOGIN =====
 client.login(TOKEN);
