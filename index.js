@@ -29,7 +29,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
 // ===== CHANGE THESE =====
 const STAFF_ROLE = "1443529641317892197";
-const LOG_CHANNEL_ID = "1501142586788675686";;
+const LOG_CHANNEL_ID = "1501142586788675686";
 const WELCOME_CHANNEL = "1443404889894948974";
 const UPI_ID = "bossakhil53@okicici";
 const STORE_NAME = "Royal Store";
@@ -104,66 +104,60 @@ client.on("interactionCreate", async interaction => {
 
     const filePath = `invoice_${Date.now()}.pdf`;
 
-    const doc = new PDFDocument({ margin: 40 });
+const doc = new PDFDocument({ margin: 40 });
+const stream = fs.createWriteStream(filePath);
 
-doc.pipe(fs.createWriteStream(filePath));
+doc.pipe(stream);
 
-// TITLE
-doc.fontSize(22).fillColor("#4F46E5").text("Royal Store", { align: "left" });
-doc.fontSize(10).fillColor("gray").text("Discord Commerce Automation");
-
+// DESIGN
+doc.fontSize(22).fillColor("#4F46E5").text(STORE_NAME);
 doc.moveDown();
 
-// INVOICE HEADER
-doc.fontSize(18).fillColor("black").text("INVOICE", { align: "right" });
-
+doc.fontSize(18).fillColor("black").text("INVOICE");
 doc.moveDown();
 
-// DETAILS
-doc.fontSize(12).text(`Invoice ID: ${Date.now()}`);
-doc.text(`Date: ${new Date().toLocaleDateString()}`);
-doc.text(`Status: PAID`);
-
-doc.moveDown();
-
-// BUYER
 doc.text(`Buyer: ${buyer.username}`);
 doc.text(`Product: ${product}`);
 doc.text(`Amount: ₹${amount}`);
-
-doc.moveDown();
-
-// TABLE STYLE
-doc.rect(40, doc.y, 500, 25).fill("#4F46E5").stroke();
-
-doc.fillColor("white").text("Description", 50, doc.y - 18);
-doc.text("Price", 400, doc.y - 18);
-
-doc.moveDown();
-
-doc.fillColor("black").text(product, 50);
-doc.text(`₹${amount}`, 400);
-
-doc.moveDown();
-
-// TOTAL
-doc.fontSize(14).text(`Grand Total: ₹${amount}`, { align: "right" });
-
-doc.moveDown();
-
-doc.fontSize(10).fillColor("gray")
-.text("Thank you for your purchase.");
+doc.text(`Status: PAID`);
 
 doc.end();
 
-    await interaction.reply({ content: "✅ Invoice Sent", ephemeral: true });
+// WAIT FOR FILE
+await new Promise(resolve => stream.on("finish", resolve));
 
-    buyer.send({
-      content: "🧾 Your Invoice",
-      files: [filePath]
-    });
+// DM
+try {
+  await buyer.send({
+    content: "🧾 Your Invoice",
+    files: [filePath]
+  });
+} catch (err) {
+  console.log("DM failed:", err);
+}
 
-    const logChannel = interaction.guild.channels.cache.find(c => c.name === LOG_CHANNEL);
+// LOG CHANNEL
+const logChannel = interaction.guild.channels.cache.get(LOG_CHANNEL_ID);
+
+if (logChannel) {
+  logChannel.send({
+    content: `Invoice for ${buyer}`,
+    files: [filePath]
+  });
+}
+
+await interaction.reply({ content: "✅ Invoice Sent", ephemeral: true }); true });
+
+    try {
+  await buyer.send({
+    content: "🧾 Your Invoice",
+    files: [filePath]
+  });
+} catch (err) {
+  console.log("DM failed:", err);
+  interaction.followUp({ content: "❌ Couldn't DM user", ephemeral: true });
+    }
+   const logChannel = interaction.guild.channels.cache.get(LOG_CHANNEL_ID);
     if (logChannel) {
       logChannel.send({
         content: `Invoice for ${buyer}`,
