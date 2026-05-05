@@ -58,40 +58,35 @@ client.on("messageCreate", async (msg) => {
     msg.channel.send(args.join(" "));
   }
 
-  if (cmd === "qr") {
-    const amount = args[0];
-    if (!amount) return msg.reply("Enter amount");
-
-    try {
-      const upi = `upi://pay?pa=${UPI_ID}&pn=${STORE_NAME}&am=${amount}&cu=INR`;
-      const qr = await QRCode.toDataURL(upi);
-
-      msg.channel.send({
-        content: `💰 Pay ₹${amount}`,
-        files: [qr]
-      });
-    } catch (err) {
-      console.log(err);
-      msg.reply("QR failed");
-    }
-  }
-
-  if (cmd === "serverinfo") {
-    msg.channel.send({
-      embeds: [{
-        title: msg.guild.name,
-        description: `Members: ${msg.guild.memberCount}`
-      }]
-    });
-  }
-});
+  
 
 // ===== SLASH =====
 client.on("interactionCreate", async interaction => {
   if (!interaction.isChatInputCommand()) return;
 
   if (!interaction.member.roles.cache.has(STAFF_ROLE)) {
-    return interaction.reply({ content: "❌ Staff only", ephemeral: true });
+    return interaction.reply({ content: "❌ Staff onlif (cmd === "qr") {
+  const amount = args[0];
+  if (!amount) return msg.reply("Enter amount");
+
+  try {
+    const upi = `upi://pay?pa=${UPI_ID}&pn=${STORE_NAME}&am=${amount}&cu=INR`;
+
+    const qrBuffer = await QRCode.toBuffer(upi);
+
+    msg.channel.send({
+      content: `💰 Pay ₹${amount}`,
+      files: [{
+        attachment: qrBuffer,
+        name: "payment.png"
+      }]
+    });
+
+  } catch (err) {
+    console.error(err);
+    msg.reply("QR failed");
+  }
+  }y", ephemeral: true });
   }
 
   if (interaction.commandName === "give_invoice") {
@@ -186,5 +181,55 @@ const commands = [
 
 ].map(cmd => cmd.toJSON());
 
+// ===== HEADER =====
+doc.fontSize(18).fillColor("#4F46E5").text(STORE_NAME, 40, 40);
+doc.fontSize(10).fillColor("gray").text("Discord Commerce Automation", 40, 60);
+
+// INVOICE RIGHT
+doc.fontSize(20).fillColor("black").text("INVOICE", 400, 40);
+
+// LINE
+doc.moveTo(40, 80).lineTo(550, 80).stroke("#4F46E5");
+
+// ===== DETAILS =====
+doc.fontSize(10).fillColor("black");
+
+doc.text(`Invoice #: ${Date.now()}`, 40, 100);
+doc.text(`Date: ${new Date().toLocaleDateString()}`, 40, 115);
+doc.text(`Status: PAID`, 40, 130);
+
+doc.text(`Billed To:`, 300, 100);
+doc.text(`${buyer.username}`, 300, 115);
+
+// ===== TABLE HEADER =====
+doc.rect(40, 160, 500, 20).fill("#4F46E5");
+
+doc.fillColor("white")
+  .text("#", 50, 165)
+  .text("Description", 80, 165)
+  .text("Qty", 350, 165)
+  .text("Price", 420, 165)
+  .text("Total", 480, 165);
+
+// ===== TABLE DATA =====
+doc.fillColor("black");
+
+doc.text("1", 50, 190);
+doc.text(product, 80, 190);
+doc.text("1", 350, 190);
+doc.text(`₹${amount}`, 420, 190);
+doc.text(`₹${amount}`, 480, 190);
+
+// ===== TOTAL =====
+doc.rect(40, 220, 500, 20).fill("#000");
+
+doc.fillColor("white")
+  .text("Grand Total", 350, 225)
+  .text(`₹${amount}`, 480, 225);
+
+// ===== FOOTER =====
+doc.fillColor("gray")
+  .fontSize(10)
+  .text("Thank you for your purchase. This is your official invoice.", 40, 270);
 // ===== LOGIN =====
 client.login(TOKEN);
