@@ -164,7 +164,7 @@ client.on("interactionCreate", async interaction => {
 
     const value = interaction.values[0];
 
-    // ===== SERVER BOOSTS =====
+    // ===== BOOSTS =====
     if (value === "boosts") {
 
       const embed = new EmbedBuilder()
@@ -248,13 +248,12 @@ client.on("interactionCreate", async interaction => {
         .setTitle("<a:NITRO:1443792698539769930> Nitro Giftlinks TOS")
         .setDescription(
 `• Delivery via gift link
-• Auto-claim warranty provided only if mentioned
+• Auto-claim warranty only if mentioned
 • Must record full video before claiming
-• Warranty valid only with proper proof
 • No warranty for user mistakes
-• No replace if link already claimed without proof
-• Validity depends on product mentioned in ticket
-• Royal Store holds rights to deny fake claims`
+• No replace without proper proof
+• Validity depends on product mentioned
+• Fake claims will be denied`
         );
 
       return interaction.reply({
@@ -265,7 +264,7 @@ client.on("interactionCreate", async interaction => {
 
   }
 
-  // ===== SLASH COMMANDS =====
+  // ===== CHAT COMMANDS =====
   if (!interaction.isChatInputCommand()) return;
 
   // ===== SERVER INFO =====
@@ -292,15 +291,140 @@ client.on("interactionCreate", async interaction => {
     });
   }
 
-  // ===== SEND TOS =====
-  if (interaction.commandName === "send_tos") {
+  // ===== FEEDBACK =====
+  if (interaction.commandName === "feedback") {
 
-    if (!interaction.member.roles.cache.has(STAFF_ROLE)) {
+    if (!feedbackChannel) {
       return interaction.reply({
-        content: "❌ Staff only",
+        content: "❌ Feedback channel not set",
         ephemeral: true
       });
     }
+
+    const user =
+      interaction.options.getUser("user");
+
+    const product =
+      interaction.options.getString("product");
+
+    const comment =
+      interaction.options.getString("comment");
+
+    const rating =
+      interaction.options.getInteger("rating");
+
+    const stars = "⭐".repeat(rating);
+
+    const embed = new EmbedBuilder()
+      .setColor("#00ff99")
+      .setTitle("🌟 New Feedback")
+      .addFields(
+        {
+          name: "📦 Product",
+          value: product
+        },
+        {
+          name: "📝 Review",
+          value: comment
+        },
+        {
+          name: "👤 From",
+          value: `${interaction.user}`
+        },
+        {
+          name: "🎯 For",
+          value: `${user}`
+        },
+        {
+          name: "⭐ Rating",
+          value: `${stars} (${rating}/5)`
+        }
+      )
+      .setTimestamp();
+
+    const channel =
+      interaction.guild.channels.cache.get(feedbackChannel);
+
+    const sent = await channel.send({
+      embeds: [embed]
+    });
+
+    await sent.react("❤️");
+    await sent.react("🔥");
+
+    return interaction.reply({
+      content: "✅ Feedback submitted",
+      ephemeral: true
+    });
+  }
+
+  // ===== STAFF CHECK =====
+  if (!interaction.member.roles.cache.has(STAFF_ROLE)) {
+
+    return interaction.reply({
+      content: "❌ Staff only",
+      ephemeral: true
+    });
+
+  }
+
+  // ===== SET FEEDBACK =====
+  if (interaction.commandName === "set_feedback_channel") {
+
+    const channel =
+      interaction.options.getChannel("channel");
+
+    feedbackChannel = channel.id;
+
+    return interaction.reply({
+      content: `✅ Feedback channel set to ${channel}`,
+      ephemeral: true
+    });
+  }
+
+  // ===== SAY =====
+  if (interaction.commandName === "say") {
+
+    const text =
+      interaction.options.getString("text");
+
+    await interaction.reply({
+      content: "✅ Sent",
+      ephemeral: true
+    });
+
+    return interaction.channel.send(text);
+  }
+
+  // ===== QR =====
+  if (interaction.commandName === "qr") {
+
+    const amount =
+      interaction.options.getString("amount");
+
+    const upi =
+`upi://pay?pa=${UPI_ID}&pn=${STORE_NAME}&am=${amount}&cu=INR`;
+
+    const qrBuffer = await QRCode.toBuffer(upi);
+
+    const attachment =
+      new AttachmentBuilder(qrBuffer, {
+        name: "payment.png"
+      });
+
+    return interaction.reply({
+      content:
+`💸 QR Generated Successfully
+
+💳 Amount: ₹${amount}
+
+After payment send screenshot ✅`,
+      files: [attachment]
+    });
+  }
+
+  // ===== SEND TOS =====
+  if (interaction.commandName === "send_tos") {
 
     const embed = new EmbedBuilder()
       .setColor("#5865F2")
@@ -361,6 +485,161 @@ Select category below`
     });
   }
 
+  // ===== GIVE INVOICE =====
+  if (interaction.commandName === "give_invoice") {
+
+    orderCount++;
+
+    const orderId =
+      orderCount.toString().padStart(4, "0");
+
+    const buyer =
+      interaction.options.getUser("buyer");
+
+    const product =
+      interaction.options.getString("product");
+
+    const amount =
+      interaction.options.getString("amount");
+
+    const filePath =
+      `invoice_${Date.now()}.pdf`;
+
+    const doc =
+      new PDFDocument({
+        margin: 40
+      });
+
+    const stream =
+      fs.createWriteStream(filePath);
+
+    doc.pipe(stream);
+
+    doc
+      .fontSize(22)
+      .fillColor("#4F46E5")
+      .text(STORE_NAME, 40, 40);
+
+    doc
+      .fontSize(26)
+      .fillColor("black")
+      .text("INVOICE", 400, 40);
+
+    doc.moveTo(40, 85)
+      .lineTo(550, 85)
+      .stroke("#4F46E5");
+
+    doc
+      .fontSize(13)
+      .fillColor("black")
+      .text(`Invoice #: ${orderId}`, 40, 110)
+      .text(`Date: ${new Date().toLocaleDateString()}`, 40, 130)
+      .text(`Status: PAID`, 40, 150);
+
+    doc
+      .text(`Billed To:`, 320, 110)
+      .text(`${buyer.username}`, 320, 130);
+
+    doc.rect(40, 210, 520, 30)
+      .fill("#4F46E5");
+
+    doc
+      .fillColor("white")
+      .fontSize(12)
+      .text("Description", 70, 220)
+      .text("Price", 420, 220);
+
+    doc
+      .fillColor("black")
+      .fontSize(12)
+      .text(product, 70, 270)
+      .text(`₹${amount}`, 420, 270);
+
+    doc.rect(40, 340, 520, 35)
+      .fill("#111111");
+
+    doc
+      .fillColor("white")
+      .fontSize(15)
+      .text("Grand Total", 350, 352)
+      .text(`₹${amount}`, 470, 352);
+
+    doc
+      .fillColor("gray")
+      .fontSize(10)
+      .text(
+        "Thank you for shopping with Royal Store ❤️",
+        170,
+        730
+      );
+
+    doc.end();
+
+    await new Promise(resolve =>
+      stream.on("finish", resolve)
+    );
+
+    try {
+
+      await buyer.send({
+        files: [filePath]
+      });
+
+      await buyer.send(
+`👑 Thank you for choosing ${STORE_NAME}!
+
+✅ Order Completed
+🧾 Invoice Sent Successfully
+⭐ Leave review using /feedback
+🚀 Enjoy your purchase!`
+      );
+
+    } catch (err) {
+      console.log("DM Failed");
+    }
+
+    const logChannel =
+      interaction.guild.channels.cache.get(LOG_CHANNEL_ID);
+
+    if (logChannel) {
+
+      const embed = new EmbedBuilder()
+        .setColor("#facc15")
+        .setTitle("🧾 Invoice Issued")
+        .addFields(
+          {
+            name: "Order #",
+            value: orderId,
+            inline: true
+          },
+          {
+            name: "Buyer",
+            value: `${buyer}`,
+            inline: true
+          },
+          {
+            name: "Amount",
+            value: `₹${amount}`,
+            inline: true
+          },
+          {
+            name: "Product",
+            value: product
+          }
+        );
+
+      logChannel.send({
+        embeds: [embed],
+        files: [filePath]
+      });
+    }
+
+    return interaction.reply({
+      content: "✅ Invoice Sent",
+      ephemeral: true
+    });
+  }
+
 });
 
 // ===== WELCOME =====
@@ -410,7 +689,89 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("send_tos")
-    .setDescription("Send TOS panel")
+    .setDescription("Send TOS panel"),
+
+  new SlashCommandBuilder()
+    .setName("say")
+    .setDescription("Send message")
+    .addStringOption(opt =>
+      opt
+        .setName("text")
+        .setDescription("Message")
+        .setRequired(true)
+    ),
+
+  new SlashCommandBuilder()
+    .setName("qr")
+    .setDescription("Generate QR")
+    .addStringOption(opt =>
+      opt
+        .setName("amount")
+        .setDescription("Amount")
+        .setRequired(true)
+    ),
+
+  new SlashCommandBuilder()
+    .setName("give_invoice")
+    .setDescription("Generate invoice")
+    .addUserOption(opt =>
+      opt
+        .setName("buyer")
+        .setDescription("Buyer")
+        .setRequired(true)
+    )
+    .addStringOption(opt =>
+      opt
+        .setName("product")
+        .setDescription("Product")
+        .setRequired(true)
+    )
+    .addStringOption(opt =>
+      opt
+        .setName("amount")
+        .setDescription("Amount")
+        .setRequired(true)
+    ),
+
+  new SlashCommandBuilder()
+    .setName("feedback")
+    .setDescription("Give feedback")
+    .addUserOption(opt =>
+      opt
+        .setName("user")
+        .setDescription("Seller")
+        .setRequired(true)
+    )
+    .addStringOption(opt =>
+      opt
+        .setName("product")
+        .setDescription("Product")
+        .setRequired(true)
+    )
+    .addStringOption(opt =>
+      opt
+        .setName("comment")
+        .setDescription("Review")
+        .setRequired(true)
+    )
+    .addIntegerOption(opt =>
+      opt
+        .setName("rating")
+        .setDescription("1-5")
+        .setRequired(true)
+        .setMinValue(1)
+        .setMaxValue(5)
+    ),
+
+  new SlashCommandBuilder()
+    .setName("set_feedback_channel")
+    .setDescription("Set feedback channel")
+    .addChannelOption(opt =>
+      opt
+        .setName("channel")
+        .setDescription("Review channel")
+        .setRequired(true)
+    )
 
 ].map(cmd => cmd.toJSON());
 
