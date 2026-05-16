@@ -39,6 +39,8 @@ const client = new Client({
   partials: [Partials.Channel]
 });
 
+const prefix = ".";
+
 const TOKEN = process.env.TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
 
@@ -94,6 +96,86 @@ function isStaff(member) {
   return member?.roles?.cache?.has(STAFF_ROLE);
 }
 
+// ===== PREFIX COMMANDS =====
+client.on("messageCreate", async (msg) => {
+
+  if (!msg.content.startsWith(prefix)) return;
+  if (msg.author.bot) return;
+
+  const args = msg.content
+    .slice(prefix.length)
+    .trim()
+    .split(/ +/);
+
+  const cmd = args.shift().toLowerCase();
+
+  // ===== SAY =====
+  if (cmd === "say") {
+
+    if (!isStaff(msg.member))
+      return msg.reply("❌ Staff only");
+
+    msg.delete().catch(() => {});
+
+    return msg.channel.send(args.join(" "));
+  }
+
+  // ===== CMDS =====
+  if (cmd === "cmds") {
+
+    const embed = new EmbedBuilder()
+      .setColor("#5865F2")
+      .setTitle("👑 Royal Store Commands")
+      .setDescription(`
+\`.say\` → Send Message  
+\`.qr\` → Generate Payment QR  
+\`.cmds\` → View Commands  
+
+\`/feedback\` → Give Review  
+\`/give_invoice\` → Send Invoice  
+\`/send_tos\` → Send TOS  
+\`/serverinfo\` → Server Info
+`);
+
+    return msg.channel.send({
+      embeds: [embed]
+    });
+  }
+
+  // ===== QR =====
+  if (cmd === "qr") {
+
+    if (!isStaff(msg.member))
+      return msg.reply("❌ Staff only");
+
+    const amount = args[0];
+
+    if (!amount)
+      return msg.reply("Enter amount");
+
+    const upi =
+`upi://pay?pa=${UPI_ID}&pn=${STORE_NAME}&am=${amount}&cu=INR`;
+
+    const qrBuffer = await QRCode.toBuffer(upi);
+
+    const attachment =
+      new AttachmentBuilder(qrBuffer, {
+        name: "payment.png"
+      });
+
+    return msg.channel.send({
+      content:
+`💸 QR Generated Successfully
+
+💳 Amount: ₹${amount}
+
+After payment, send screenshot for verification ✅`,
+      files: [attachment]
+    });
+  }
+
+});
+
 // ===== INTERACTIONS =====
 client.on("interactionCreate", async interaction => {
 
@@ -104,12 +186,12 @@ client.on("interactionCreate", async interaction => {
 
     let embed;
 
-    // ===== SERVER BOOST =====
+    // ===== BOOSTS =====
     if (value === "boosts") {
 
       embed = new EmbedBuilder()
         .setColor("#ff00aa")
-        .setTitle("🚀 Server Boosts TOS")
+        .setTitle("<a:Boosters:1443793092028137524> Server Boosts TOS")
         .setDescription(`
 • No warranty on revokes  
 • No Refund Or Replace On AntiBot Bans  
@@ -124,7 +206,7 @@ client.on("interactionCreate", async interaction => {
 
       embed = new EmbedBuilder()
         .setColor("#5865F2")
-        .setTitle("🎁 Nitro IDs / Discord Accounts TOS")
+        .setTitle("<a:nitro:1505129726212177960> Nitro IDs / Discord Accounts TOS")
         .setDescription(`
 • Video proof required  
 • Must change email & password after delivery  
@@ -138,7 +220,7 @@ client.on("interactionCreate", async interaction => {
 
       embed = new EmbedBuilder()
         .setColor("#00b0f4")
-        .setTitle("🛠️ Methods / Tools TOS")
+        .setTitle("<a:bot_developer:1444508717994348705> Methods / Tools TOS")
         .setDescription(`
 • No refund if patched  
 • Tools are PC only
@@ -150,7 +232,7 @@ client.on("interactionCreate", async interaction => {
 
       embed = new EmbedBuilder()
         .setColor("#00ff99")
-        .setTitle("👥 Discord Members TOS")
+        .setTitle("<a:DISCORD:1443793884584083538> Discord Members TOS")
         .setDescription(`
 • No warranty against bans/kicks  
 • No refund if antibot kicks tokens  
@@ -164,7 +246,7 @@ client.on("interactionCreate", async interaction => {
 
       embed = new EmbedBuilder()
         .setColor("#ff66cc")
-        .setTitle("🎁 Nitro Giftlink TOS")
+        .setTitle("<a:NITRO:1443792698539769930> Nitro Giftlinks TOS")
         .setDescription(`
 • Delivery via Gift Link  
 • Auto-Claim Warranty only if mentioned  
@@ -181,7 +263,7 @@ client.on("interactionCreate", async interaction => {
 
   }
 
-  // ===== SLASH COMMANDS =====
+  // ===== SLASH =====
   if (!interaction.isChatInputCommand()) return;
 
   // ===== SERVER INFO =====
@@ -274,7 +356,7 @@ client.on("interactionCreate", async interaction => {
     });
   }
 
-  // ===== STAFF CHECK =====
+  // ===== STAFF ONLY =====
   if (!interaction.member.roles.cache.has(STAFF_ROLE)) {
     return interaction.reply({
       content: "❌ Staff only",
@@ -282,7 +364,7 @@ client.on("interactionCreate", async interaction => {
     });
   }
 
-  // ===== SET FEEDBACK CHANNEL =====
+  // ===== SET FEEDBACK =====
   if (interaction.commandName === "set_feedback_channel") {
 
     const channel =
@@ -321,27 +403,42 @@ Select category below
           {
             label: "Server Boosts",
             value: "boosts",
-            emoji: "🚀"
+            emoji: {
+              id: "1443793092028137524",
+              animated: true
+            }
           },
           {
             label: "Nitro IDs / Accounts",
             value: "nitroids",
-            emoji: "🎁"
+            emoji: {
+              id: "1505129726212177960",
+              animated: true
+            }
           },
           {
             label: "Methods / Tools",
             value: "methods",
-            emoji: "🛠️"
+            emoji: {
+              id: "1444508717994348705",
+              animated: true
+            }
           },
           {
             label: "Discord Members",
             value: "members",
-            emoji: "👥"
+            emoji: {
+              id: "1443793884584083538",
+              animated: true
+            }
           },
           {
             label: "Nitro Giftlinks",
             value: "giftlink",
-            emoji: "💎"
+            emoji: {
+              id: "1443792698539769930",
+              animated: true
+            }
           }
         ]);
 
@@ -352,33 +449,6 @@ Select category below
     return interaction.reply({
       embeds: [embed],
       components: [row]
-    });
-  }
-
-  // ===== QR =====
-  if (interaction.commandName === "qr") {
-
-    const amount =
-      interaction.options.getString("amount");
-
-    const upi =
-`upi://pay?pa=${UPI_ID}&pn=${STORE_NAME}&am=${amount}&cu=INR`;
-
-    const qrBuffer = await QRCode.toBuffer(upi);
-
-    const attachment =
-      new AttachmentBuilder(qrBuffer, {
-        name: "payment.png"
-      });
-
-    return interaction.reply({
-      content:
-`💸 QR Generated Successfully
-
-💳 Amount: ₹${amount}
-
-After payment, send screenshot for verification ✅`,
-      files: [attachment]
     });
   }
 
