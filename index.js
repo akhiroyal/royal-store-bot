@@ -664,7 +664,6 @@ After payment, send payment screenshot here for verification ✅`,
     });
   }
 
-});
 
 // ===== WELCOME =====
 client.on("guildMemberAdd", async member => {
