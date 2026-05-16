@@ -272,8 +272,7 @@ if (value === "giftlinks") {
     embeds: [embed],
     ephemeral: true
   });
-return;
-  }
+}
 
   // ===== SLASH COMMANDS =====
   if (!interaction.isChatInputCommand()) return;
