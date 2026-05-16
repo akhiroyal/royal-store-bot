@@ -171,9 +171,11 @@ client.on("interactionCreate", async interaction => {
   // ===== DROPDOWN =====
   if (interaction.isStringSelectMenu()) {
 
+    await interaction.deferUpdate();
+
     const value = interaction.values[0];
 
-    // ===== SERVER BOOSTS =====
+    // ===== BOOSTS =====
     if (value === "boosts") {
 
       const embed = new EmbedBuilder()
@@ -235,6 +237,7 @@ client.on("interactionCreate", async interaction => {
         .setTitle("<a:DISCORD:1443793884584083538> Discord Members TOS")
         .setDescription(`
 • No warranty against bans/kicks
+• No Warranty If Discord Bans Tokens
 • No refund if antibot blocks joins
 • No replace if tokens banned
 • No refund if bot kicked while joining
@@ -252,9 +255,9 @@ client.on("interactionCreate", async interaction => {
         .setColor("#ff66cc")
         .setTitle("<a:NITRO:1443792698539769930> Nitro Giftlinks TOS")
         .setDescription(`
-• No warranty usually works 30 days
+• Usually works around 30 days
 • Auto Claim Warranty Provided
-• Must record full proof while claiming
+• Must record proof while claiming
 • No revoke warranty
 `);
 
@@ -425,7 +428,7 @@ Select category below
       ephemeral: true
     });
 
-    interaction.channel.send({
+    return interaction.channel.send({
       embeds: [embed],
       components: [row]
     });
