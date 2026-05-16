@@ -252,27 +252,27 @@ client.on("interactionCreate", async interaction => {
       }
 
       // ===== GIFTLINKS =====
-      if (value === "giftlinks") {
+if (value === "giftlinks") {
 
-        const embed = new EmbedBuilder()
-          .setColor("#ff66cc")
-          .setTitle("<a:NITRO:1443792698539769930> Nitro Giftlinks TOS")
-          .setDescription(`
-• Usually works for 30 days
-• No autoclaim warranty
-• No revoke warranty
-• Video proof recommended
+  const embed = new EmbedBuilder()
+    .setColor("#ff66cc")
+    .setTitle("<a:NITRO:1443792698539769930> Nitro Giftlinks TOS")
+    .setDescription(`
+• Delivery via Gift Link
+• Duration depends on purchased product
+• Auto-Claim Warranty Provided Only If Mentioned
+• Must record full video before opening link till claiming for warranty
+• No warranty without proper proof
+• No refund/replacement after successful claim
+• We are not responsible for user mistakes after delivery
+• Warranty valid only under mentioned conditions
 `);
 
-        return interaction.reply({
-          embeds: [embed],
-          ephemeral: true
-        });
-      }
-
-    }
-
-    return;
+  return interaction.reply({
+    embeds: [embed],
+    ephemeral: true
+  });
+return;
   }
 
   // ===== SLASH COMMANDS =====
