@@ -9,19 +9,19 @@ const {
   EmbedBuilder,
   ActionRowBuilder,
   StringSelectMenuBuilder
-} = require('discord.js');
+} = require("discord.js");
 
-const { REST } = require('@discordjs/rest');
-const QRCode = require('qrcode');
-const PDFDocument = require('pdfkit');
-const fs = require('fs');
-const express = require('express');
+const { REST } = require("@discordjs/rest");
+const QRCode = require("qrcode");
+const PDFDocument = require("pdfkit");
+const fs = require("fs");
+const express = require("express");
 
 // ===== WEB SERVER =====
 const app = express();
 
-app.get('/', (req, res) => {
-  res.send('Royal Store Bot Running');
+app.get("/", (req, res) => {
+  res.send("Royal Store Bot Running");
 });
 
 app.listen(3000, () => {
@@ -50,7 +50,6 @@ const LOG_CHANNEL_ID = "1501142586788675686";
 const WELCOME_CHANNEL_ID = "1443404889894948974";
 
 const UPI_ID = "bossakhil53@okicici";
-
 const STORE_NAME = "Royal Store";
 
 const GIF_URL =
@@ -65,14 +64,8 @@ client.once("ready", () => {
 
   console.log(`Logged in as ${client.user.tag}`);
 
-  const getTotalMembers = () =>
-    client.guilds.cache.reduce(
-      (acc, guild) => acc + guild.memberCount,
-      0
-    );
-
   const statuses = [
-    () => `👥 ${getTotalMembers()} Members`,
+    () => `👥 ${client.guilds.cache.reduce((a, g) => a + g.memberCount, 0)} Members`,
     () => `🏠 ${client.guilds.cache.size} Servers`,
     () => "💰 Processing Payments",
     () => "🧾 Generating Invoices",
@@ -84,12 +77,10 @@ client.once("ready", () => {
 
   setInterval(() => {
 
-    const status = statuses[i % statuses.length]();
-
     client.user.setPresence({
       activities: [
         {
-          name: status,
+          name: statuses[i % statuses.length](),
           type: 3
         }
       ],
@@ -126,9 +117,9 @@ client.on("messageCreate", async (msg) => {
     if (!isStaff(msg.member))
       return msg.reply("❌ Staff only");
 
-    msg.delete().catch(() => {});
+    await msg.delete().catch(() => {});
 
-    msg.channel.send(args.join(" "));
+    return msg.channel.send(args.join(" "));
   }
 
   // ===== QR =====
@@ -152,7 +143,7 @@ client.on("messageCreate", async (msg) => {
         name: "payment.png"
       });
 
-    msg.channel.send({
+    return msg.channel.send({
       content:
 `💸 QR Generated Successfully
 
@@ -168,111 +159,111 @@ After payment, send payment screenshot here for verification ✅`,
 // ===== INTERACTIONS =====
 client.on("interactionCreate", async interaction => {
 
-  // ===== TOS SELECT MENU =====
+  // ===== SELECT MENU =====
   if (interaction.isStringSelectMenu()) {
 
-    if (interaction.customId === "tos_select") {
+    const value = interaction.values[0];
 
-      const value = interaction.values[0];
+    // ===== SERVER BOOSTS =====
+    if (value === "boosts") {
 
-      // ===== SERVER BOOSTS =====
-      if (value === "boosts") {
-
-        const embed = new EmbedBuilder()
-          .setColor("#ff00aa")
-          .setTitle("<a:Boosters:1443793092028137524> Server Boosts TOS")
-          .setDescription(`
-• No warranty on revokes
+      const embed = new EmbedBuilder()
+        .setColor("#ff00aa")
+        .setTitle("<a:Boosters:1443793092028137524> Server Boosts TOS")
+        .setDescription(
+`• No warranty on revokes
 • No Refund Or Replace On AntiBot Bans
 • Full Warranty If Mentioned Only
 • Revoke Warranty If Mentioned Only
-• Rep Warranty If Mentioned Only
-`);
+• Rep Warranty If Mentioned Only`
+        );
 
-        return interaction.reply({
-          embeds: [embed],
-          ephemeral: true
-        });
-      }
+      return interaction.reply({
+        embeds: [embed],
+        ephemeral: true
+      });
+    }
 
-      // ===== NITRO IDS =====
-      if (value === "nitro_ids") {
+    // ===== NITRO IDS =====
+    if (value === "nitroids") {
 
-        const embed = new EmbedBuilder()
-          .setColor("#5865F2")
-          .setTitle("<a:nitro:1505129726212177960> Nitro IDs / Discord Accounts TOS")
-          .setDescription(`
-• Video proof required
+      const embed = new EmbedBuilder()
+        .setColor("#5865F2")
+        .setTitle("<a:nitro:1505129726212177960> Nitro IDs / Discord Accounts TOS")
+        .setDescription(
+`• Video proof required
 • Must change email & password after delivery
 • No warranty on Discord lock or bans
-• No warranty if Discord revokes nitro
-`);
+• No warranty if Discord revokes nitro`
+        );
 
-        return interaction.reply({
-          embeds: [embed],
-          ephemeral: true
-        });
-      }
+      return interaction.reply({
+        embeds: [embed],
+        ephemeral: true
+      });
+    }
 
-      // ===== METHODS =====
-      if (value === "methods") {
+    // ===== METHODS =====
+    if (value === "methods") {
 
-        const embed = new EmbedBuilder()
-          .setColor("#00aeff")
-          .setTitle("<a:bot_developer:1444508717994348705> Methods / Tools TOS")
-          .setDescription(`
-• No refund if patched
+      const embed = new EmbedBuilder()
+        .setColor("#00aeff")
+        .setTitle("<a:bot_developer:1444508717994348705> Methods / Tools TOS")
+        .setDescription(
+`• No refund if patched
 • Tools are PC only
-• User mistake = no replace
-`);
+• User mistake = no replace`
+        );
 
-        return interaction.reply({
-          embeds: [embed],
-          ephemeral: true
-        });
-      }
+      return interaction.reply({
+        embeds: [embed],
+        ephemeral: true
+      });
+    }
 
-      // ===== MEMBERS =====
-      if (value === "members") {
+    // ===== MEMBERS =====
+    if (value === "members") {
 
-        const embed = new EmbedBuilder()
-          .setColor("#00ff99")
-          .setTitle("<a:DISCORD:1443793884584083538> Discord Members TOS")
-          .setDescription(`
-• No warranty against bans/kicks
+      const embed = new EmbedBuilder()
+        .setColor("#00ff99")
+        .setTitle("<a:DISCORD:1443793884584083538> Discord Members TOS")
+        .setDescription(
+`• No warranty against bans/kicks
 • No warranty if Discord bans tokens
 • No refund if server bans tokens
-• No replace if antibots kick tokens
-`);
+• No replace if antibots kick tokens`
+        );
 
-        return interaction.reply({
-          embeds: [embed],
-          ephemeral: true
-        });
-      }
+      return interaction.reply({
+        embeds: [embed],
+        ephemeral: true
+      });
+    }
 
-      // ===== GIFTLINKS =====
-if (value === "giftlinks") {
+    // ===== GIFTLINKS =====
+    if (value === "giftlinks") {
 
-  const embed = new EmbedBuilder()
-    .setColor("#ff66cc")
-    .setTitle("<a:NITRO:1443792698539769930> Nitro Giftlinks TOS")
-    .setDescription(`
-• Delivery via Gift Link
-• Duration depends on purchased product
-• Auto-Claim Warranty Provided Only If Mentioned
-• Must record full video before opening link till claiming for warranty
-• No warranty without proper proof
-• No refund/replacement after successful claim
-• We are not responsible for user mistakes after delivery
-• Warranty valid only under mentioned conditions
-`);
+      const embed = new EmbedBuilder()
+        .setColor("#ff66cc")
+        .setTitle("<a:NITRO:1443792698539769930> Nitro Giftlinks TOS")
+        .setDescription(
+`• Delivery via gift link
+• Auto-claim warranty provided only if mentioned
+• Must record full video before claiming
+• Warranty valid only with proper proof
+• No warranty for user mistakes
+• No replace if link already claimed without proof
+• Validity depends on product mentioned in ticket
+• Royal Store holds rights to deny fake claims`
+        );
 
-  return interaction.reply({
-    embeds: [embed],
-    ephemeral: true
-  });
-}
+      return interaction.reply({
+        embeds: [embed],
+        ephemeral: true
+      });
+    }
+
+  }
 
   // ===== SLASH COMMANDS =====
   if (!interaction.isChatInputCommand()) return;
@@ -301,141 +292,63 @@ if (value === "giftlinks") {
     });
   }
 
-  // ===== FEEDBACK =====
-  if (interaction.commandName === "feedback") {
+  // ===== SEND TOS =====
+  if (interaction.commandName === "send_tos") {
 
-    if (!feedbackChannel) {
+    if (!interaction.member.roles.cache.has(STAFF_ROLE)) {
       return interaction.reply({
-        content: "❌ Feedback channel not set.",
+        content: "❌ Staff only",
         ephemeral: true
       });
     }
 
-    const user =
-      interaction.options.getUser("user");
-
-    const product =
-      interaction.options.getString("product");
-
-    const comment =
-      interaction.options.getString("comment");
-
-    const rating =
-      interaction.options.getInteger("rating");
-
-    const stars = "⭐".repeat(rating);
-
-    const embed = new EmbedBuilder()
-      .setColor("#00ff99")
-      .setTitle("🌟 New Feedback")
-      .addFields(
-        {
-          name: "📦 Product",
-          value: product
-        },
-        {
-          name: "📝 Review",
-          value: comment
-        },
-        {
-          name: "👤 From",
-          value: `${interaction.user}`
-        },
-        {
-          name: "🎯 For",
-          value: `${user}`
-        },
-        {
-          name: "⭐ Rating",
-          value: `${stars} (${rating}/5)`
-        }
-      )
-      .setFooter({
-        text: `Customer ID: ${interaction.user.id}`
-      })
-      .setTimestamp();
-
-    const channel =
-      interaction.guild.channels.cache.get(feedbackChannel);
-
-    const sent = await channel.send({
-      embeds: [embed]
-    });
-
-    await sent.react("❤️");
-    await sent.react("🔥");
-
-    return interaction.reply({
-      content: "✅ Feedback submitted successfully",
-      ephemeral: true
-    });
-  }
-
-  // ===== STAFF CHECK =====
-  if (!interaction.member.roles.cache.has(STAFF_ROLE)) {
-    return interaction.reply({
-      content: "❌ Staff only",
-      ephemeral: true
-    });
-  }
-
-  // ===== SEND TOS =====
-  if (interaction.commandName === "send_tos") {
-
     const embed = new EmbedBuilder()
       .setColor("#5865F2")
       .setTitle("📜 Royal Store — Terms of Service")
-      .setDescription(`
-# General Rules
+      .setDescription(
+`## General Rules
 
 • All deals must be inside official tickets
 • Outside deals = no responsibility
 • We can change TOS anytime
 • Buying from Royal Store = Accepting TOS
 
-Select category below
-`);
+Select category below`
+      );
 
-    const menu =
-      new StringSelectMenuBuilder()
-        .setCustomId("tos_select")
-        .setPlaceholder("Select TOS Category")
-        .addOptions([
-          {
-            label: "Server Boosts",
-            description: "View boosts TOS",
-            value: "boosts",
-            emoji: "<a:Boosters:1443793092028137524>"
-          },
-          {
-            label: "Nitro IDs / Accounts",
-            description: "View nitro IDs TOS",
-            value: "nitro_ids",
-            emoji: "<a:nitro:1505129726212177960>"
-          },
-          {
-            label: "Methods / Tools",
-            description: "View methods TOS",
-            value: "methods",
-            emoji: "<a:bot_developer:1444508717994348705>"
-          },
-          {
-            label: "Discord Members",
-            description: "View members TOS",
-            value: "members",
-            emoji: "<a:DISCORD:1443793884584083538>"
-          },
-          {
-            label: "Nitro Giftlinks",
-            description: "View giftlinks TOS",
-            value: "giftlinks",
-            emoji: "<a:NITRO:1443792698539769930>"
-          }
-        ]);
-
-    const row =
-      new ActionRowBuilder()
-        .addComponents(menu);
+    const row = new ActionRowBuilder()
+      .addComponents(
+        new StringSelectMenuBuilder()
+          .setCustomId("tos_menu")
+          .setPlaceholder("Select TOS Category")
+          .addOptions([
+            {
+              label: "Server Boosts",
+              value: "boosts",
+              emoji: "1443793092028137524"
+            },
+            {
+              label: "Nitro IDs / Accounts",
+              value: "nitroids",
+              emoji: "1505129726212177960"
+            },
+            {
+              label: "Methods / Tools",
+              value: "methods",
+              emoji: "1444508717994348705"
+            },
+            {
+              label: "Discord Members",
+              value: "members",
+              emoji: "1443793884584083538"
+            },
+            {
+              label: "Nitro Giftlinks",
+              value: "giftlinks",
+              emoji: "1443792698539769930"
+            }
+          ])
+      );
 
     await interaction.channel.send({
       embeds: [embed],
@@ -448,222 +361,7 @@ Select category below
     });
   }
 
-  // ===== SET FEEDBACK CHANNEL =====
-  if (interaction.commandName === "set_feedback_channel") {
-
-    const channel =
-      interaction.options.getChannel("channel");
-
-    feedbackChannel = channel.id;
-
-    return interaction.reply({
-      content:
-`✅ Feedback channel set to ${channel}`,
-      ephemeral: true
-    });
-  }
-
-  // ===== SAY =====
-  if (interaction.commandName === "say") {
-
-    const text =
-      interaction.options.getString("text");
-
-    await interaction.reply({
-      content: "✅ Message Sent",
-      ephemeral: true
-    });
-
-    interaction.channel.send(text);
-  }
-
-  // ===== QR =====
-  if (interaction.commandName === "qr") {
-
-    const amount =
-      interaction.options.getString("amount");
-
-    const upi =
-`upi://pay?pa=${UPI_ID}&pn=${STORE_NAME}&am=${amount}&cu=INR`;
-
-    const qrBuffer = await QRCode.toBuffer(upi);
-
-    const attachment =
-      new AttachmentBuilder(qrBuffer, {
-        name: "payment.png"
-      });
-
-    return interaction.reply({
-      content:
-`💸 QR Generated Successfully
-
-💳 Amount: ₹${amount}
-
-After payment, send payment screenshot here for verification ✅`,
-      files: [attachment]
-    });
-  }
-
-  // ===== GIVE INVOICE =====
-  if (interaction.commandName === "give_invoice") {
-
-    orderCount++;
-
-    const orderId =
-      orderCount.toString().padStart(4, "0");
-
-    const buyer =
-      interaction.options.getUser("buyer");
-
-    const product =
-      interaction.options.getString("product");
-
-    const amount =
-      interaction.options.getString("amount");
-
-    const filePath =
-      `invoice_${Date.now()}.pdf`;
-
-    const doc =
-      new PDFDocument({
-        margin: 40
-      });
-
-    const stream =
-      fs.createWriteStream(filePath);
-
-    doc.pipe(stream);
-
-    doc
-      .fontSize(22)
-      .fillColor("#4F46E5")
-      .text(STORE_NAME, 40, 40);
-
-    doc
-      .fontSize(26)
-      .fillColor("black")
-      .text("INVOICE", 400, 40);
-
-    doc.moveTo(40, 85)
-      .lineTo(550, 85)
-      .stroke("#4F46E5");
-
-    doc
-      .fontSize(13)
-      .fillColor("black")
-      .text(`Invoice #: ${orderId}`, 40, 110)
-      .text(`Date: ${new Date().toLocaleDateString()}`, 40, 130)
-      .text(`Status: PAID`, 40, 150);
-
-    doc
-      .text(`Billed To:`, 320, 110)
-      .text(`${buyer.username}`, 320, 130);
-
-    doc.rect(40, 210, 520, 30)
-      .fill("#4F46E5");
-
-    doc
-      .fillColor("white")
-      .fontSize(12)
-      .text("Description", 70, 220)
-      .text("Price", 420, 220);
-
-    doc
-      .fillColor("black")
-      .fontSize(12)
-      .text(product, 70, 270)
-      .text(`₹${amount}`, 420, 270);
-
-    doc.rect(40, 340, 520, 35)
-      .fill("#111111");
-
-    doc
-      .fillColor("white")
-      .fontSize(15)
-      .text("Grand Total", 350, 352)
-      .text(`₹${amount}`, 470, 352);
-
-    doc
-      .fillColor("gray")
-      .fontSize(10)
-      .text(
-        "Thank you for shopping with Royal Store ❤️",
-        170,
-        730
-      );
-
-    doc.end();
-
-    await new Promise(resolve =>
-      stream.on("finish", resolve)
-    );
-
-    try {
-
-      await buyer.send({
-        files: [filePath]
-      });
-
-      await buyer.send(
-`👑 Thank you for choosing ${STORE_NAME}!
-
-✅ Order Completed
-🧾 Invoice Sent Successfully
-⭐ Feel free to leave a review using /feedback
-💎 We appreciate your support
-🚀 Enjoy your purchase!`
-      );
-
-    } catch (err) {
-      console.log("DM Failed");
-    }
-
-    const logChannel =
-      interaction.guild.channels.cache.get(LOG_CHANNEL_ID);
-
-    if (logChannel) {
-
-      const embed = new EmbedBuilder()
-        .setColor("#facc15")
-        .setTitle("🧾 Invoice Issued")
-        .addFields(
-          {
-            name: "Order #",
-            value: orderId,
-            inline: true
-          },
-          {
-            name: "Buyer",
-            value: `${buyer}`,
-            inline: true
-          },
-          {
-            name: "Amount",
-            value: `₹${amount}`,
-            inline: true
-          },
-          {
-            name: "Product",
-            value: product
-          }
-        )
-        .setFooter({
-          text: `Issued by ${interaction.user.username}`
-        })
-        .setTimestamp();
-
-      logChannel.send({
-        embeds: [embed],
-        files: [filePath]
-      });
-    }
-
-    interaction.reply({
-      content: "✅ Invoice Sent",
-      ephemeral: true
-    });
-  }
-
+});
 
 // ===== WELCOME =====
 client.on("guildMemberAdd", async member => {
@@ -690,11 +388,13 @@ Enjoy shopping with us 💰`
   });
 
   try {
+
     await member.send(
 `👑 Welcome to ${STORE_NAME}!
 
 Enjoy shopping with us 💰`
     );
+
   } catch (err) {
     console.log("DM closed");
   }
@@ -705,100 +405,18 @@ Enjoy shopping with us 💰`
 const commands = [
 
   new SlashCommandBuilder()
-    .setName("say")
-    .setDescription("Send message")
-    .addStringOption(opt =>
-      opt
-        .setName("text")
-        .setDescription("Message")
-        .setRequired(true)
-    ),
-
-  new SlashCommandBuilder()
-    .setName("qr")
-    .setDescription("Generate QR")
-    .addStringOption(opt =>
-      opt
-        .setName("amount")
-        .setDescription("Amount")
-        .setRequired(true)
-    ),
-
-  new SlashCommandBuilder()
-    .setName("give_invoice")
-    .setDescription("Generate invoice")
-    .addUserOption(opt =>
-      opt
-        .setName("buyer")
-        .setDescription("Buyer")
-        .setRequired(true)
-    )
-    .addStringOption(opt =>
-      opt
-        .setName("product")
-        .setDescription("Product")
-        .setRequired(true)
-    )
-    .addStringOption(opt =>
-      opt
-        .setName("amount")
-        .setDescription("Amount")
-        .setRequired(true)
-    ),
-
-  new SlashCommandBuilder()
     .setName("serverinfo")
     .setDescription("Server info"),
 
   new SlashCommandBuilder()
-    .setName("feedback")
-    .setDescription("Give feedback")
-    .addUserOption(opt =>
-      opt
-        .setName("user")
-        .setDescription("Seller")
-        .setRequired(true)
-    )
-    .addStringOption(opt =>
-      opt
-        .setName("product")
-        .setDescription("Product")
-        .setRequired(true)
-    )
-    .addStringOption(opt =>
-      opt
-        .setName("comment")
-        .setDescription("Review")
-        .setRequired(true)
-    )
-    .addIntegerOption(opt =>
-      opt
-        .setName("rating")
-        .setDescription("1-5")
-        .setRequired(true)
-        .setMinValue(1)
-        .setMaxValue(5)
-    ),
-
-  new SlashCommandBuilder()
-    .setName("set_feedback_channel")
-    .setDescription("Set feedback channel")
-    .addChannelOption(opt =>
-      opt
-        .setName("channel")
-        .setDescription("Review channel")
-        .setRequired(true)
-    ),
-
-  new SlashCommandBuilder()
     .setName("send_tos")
-    .setDescription("Send store TOS")
+    .setDescription("Send TOS panel")
 
 ].map(cmd => cmd.toJSON());
 
 // ===== REGISTER =====
 const rest =
-  new REST({ version: '10' })
+  new REST({ version: "10" })
     .setToken(TOKEN);
 
 (async () => {
@@ -815,7 +433,9 @@ const rest =
     console.log("Slash commands registered");
 
   } catch (err) {
+
     console.log(err);
+
   }
 
 })();
