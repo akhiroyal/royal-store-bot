@@ -168,20 +168,20 @@ After payment, send payment screenshot here for verification ✅`,
 // ===== INTERACTIONS =====
 client.on("interactionCreate", async interaction => {
 
-  // ===== DROPDOWN =====
+  // ===== TOS SELECT MENU =====
   if (interaction.isStringSelectMenu()) {
 
-    await interaction.deferUpdate();
+    if (interaction.customId === "tos_select") {
 
-    const value = interaction.values[0];
+      const value = interaction.values[0];
 
-    // ===== BOOSTS =====
-    if (value === "boosts") {
+      // ===== SERVER BOOSTS =====
+      if (value === "boosts") {
 
-      const embed = new EmbedBuilder()
-        .setColor("#ff00aa")
-        .setTitle("<a:Boosters:1443793092028137524> Server Boosts TOS")
-        .setDescription(`
+        const embed = new EmbedBuilder()
+          .setColor("#ff00aa")
+          .setTitle("<a:Boosters:1443793092028137524> Server Boosts TOS")
+          .setDescription(`
 • No warranty on revokes
 • No Refund Or Replace On AntiBot Bans
 • Full Warranty If Mentioned Only
@@ -189,85 +189,93 @@ client.on("interactionCreate", async interaction => {
 • Rep Warranty If Mentioned Only
 `);
 
-      return interaction.channel.send({
-        embeds: [embed]
-      });
-    }
+        return interaction.reply({
+          embeds: [embed],
+          ephemeral: true
+        });
+      }
 
-    // ===== NITRO IDS =====
-    if (value === "nitroids") {
+      // ===== NITRO IDS =====
+      if (value === "nitro_ids") {
 
-      const embed = new EmbedBuilder()
-        .setColor("#5865F2")
-        .setTitle("<a:nitro:1505129726212177960> Nitro IDs / Discord Accounts TOS")
-        .setDescription(`
+        const embed = new EmbedBuilder()
+          .setColor("#5865F2")
+          .setTitle("<a:nitro:1505129726212177960> Nitro IDs / Discord Accounts TOS")
+          .setDescription(`
 • Video proof required
 • Must change email & password after delivery
 • No warranty on Discord lock or bans
 • No warranty if Discord revokes nitro
 `);
 
-      return interaction.channel.send({
-        embeds: [embed]
-      });
-    }
+        return interaction.reply({
+          embeds: [embed],
+          ephemeral: true
+        });
+      }
 
-    // ===== METHODS =====
-    if (value === "methods") {
+      // ===== METHODS =====
+      if (value === "methods") {
 
-      const embed = new EmbedBuilder()
-        .setColor("#0099ff")
-        .setTitle("<a:bot_developer:1444508717994348705> Methods / Tools TOS")
-        .setDescription(`
+        const embed = new EmbedBuilder()
+          .setColor("#00aeff")
+          .setTitle("<a:bot_developer:1444508717994348705> Methods / Tools TOS")
+          .setDescription(`
 • No refund if patched
 • Tools are PC only
 • User mistake = no replace
 `);
 
-      return interaction.channel.send({
-        embeds: [embed]
-      });
-    }
+        return interaction.reply({
+          embeds: [embed],
+          ephemeral: true
+        });
+      }
 
-    // ===== MEMBERS =====
-    if (value === "members") {
+      // ===== MEMBERS =====
+      if (value === "members") {
 
-      const embed = new EmbedBuilder()
-        .setColor("#00ffaa")
-        .setTitle("<a:DISCORD:1443793884584083538> Discord Members TOS")
-        .setDescription(`
+        const embed = new EmbedBuilder()
+          .setColor("#00ff99")
+          .setTitle("<a:DISCORD:1443793884584083538> Discord Members TOS")
+          .setDescription(`
 • No warranty against bans/kicks
-• No Warranty If Discord Bans Tokens
-• No refund if antibot blocks joins
-• No replace if tokens banned
-• No refund if bot kicked while joining
+• No warranty if Discord bans tokens
+• No refund if server bans tokens
+• No replace if antibots kick tokens
 `);
 
-      return interaction.channel.send({
-        embeds: [embed]
-      });
-    }
+        return interaction.reply({
+          embeds: [embed],
+          ephemeral: true
+        });
+      }
 
-    // ===== GIFTLINK =====
-    if (value === "giftlink") {
+      // ===== GIFTLINKS =====
+      if (value === "giftlinks") {
 
-      const embed = new EmbedBuilder()
-        .setColor("#ff66cc")
-        .setTitle("<a:NITRO:1443792698539769930> Nitro Giftlinks TOS")
-        .setDescription(`
-• Usually works around 30 days
-• Auto Claim Warranty Provided
-• Must record proof while claiming
+        const embed = new EmbedBuilder()
+          .setColor("#ff66cc")
+          .setTitle("<a:NITRO:1443792698539769930> Nitro Giftlinks TOS")
+          .setDescription(`
+• Usually works for 30 days
+• No autoclaim warranty
 • No revoke warranty
+• Video proof recommended
 `);
 
-      return interaction.channel.send({
-        embeds: [embed]
-      });
+        return interaction.reply({
+          embeds: [embed],
+          ephemeral: true
+        });
+      }
+
     }
 
+    return;
   }
 
+  // ===== SLASH COMMANDS =====
   if (!interaction.isChatInputCommand()) return;
 
   // ===== SERVER INFO =====
@@ -389,52 +397,59 @@ client.on("interactionCreate", async interaction => {
 Select category below
 `);
 
-    const row = new ActionRowBuilder()
-      .addComponents(
-        new StringSelectMenuBuilder()
-          .setCustomId("tos_menu")
-          .setPlaceholder("Select TOS Category")
-          .addOptions([
-            {
-              label: "Server Boosts",
-              value: "boosts",
-              emoji: "1443793092028137524"
-            },
-            {
-              label: "Nitro IDs / Accounts",
-              value: "nitroids",
-              emoji: "1505129726212177960"
-            },
-            {
-              label: "Methods / Tools",
-              value: "methods",
-              emoji: "1444508717994348705"
-            },
-            {
-              label: "Discord Members",
-              value: "members",
-              emoji: "1443793884584083538"
-            },
-            {
-              label: "Nitro Giftlinks",
-              value: "giftlink",
-              emoji: "1443792698539769930"
-            }
-          ])
-      );
+    const menu =
+      new StringSelectMenuBuilder()
+        .setCustomId("tos_select")
+        .setPlaceholder("Select TOS Category")
+        .addOptions([
+          {
+            label: "Server Boosts",
+            description: "View boosts TOS",
+            value: "boosts",
+            emoji: "<a:Boosters:1443793092028137524>"
+          },
+          {
+            label: "Nitro IDs / Accounts",
+            description: "View nitro IDs TOS",
+            value: "nitro_ids",
+            emoji: "<a:nitro:1505129726212177960>"
+          },
+          {
+            label: "Methods / Tools",
+            description: "View methods TOS",
+            value: "methods",
+            emoji: "<a:bot_developer:1444508717994348705>"
+          },
+          {
+            label: "Discord Members",
+            description: "View members TOS",
+            value: "members",
+            emoji: "<a:DISCORD:1443793884584083538>"
+          },
+          {
+            label: "Nitro Giftlinks",
+            description: "View giftlinks TOS",
+            value: "giftlinks",
+            emoji: "<a:NITRO:1443792698539769930>"
+          }
+        ]);
 
-    await interaction.reply({
-      content: "✅ TOS Sent",
-      ephemeral: true
-    });
+    const row =
+      new ActionRowBuilder()
+        .addComponents(menu);
 
-    return interaction.channel.send({
+    await interaction.channel.send({
       embeds: [embed],
       components: [row]
     });
+
+    return interaction.reply({
+      content: "✅ TOS Sent",
+      ephemeral: true
+    });
   }
 
-  // ===== SET FEEDBACK =====
+  // ===== SET FEEDBACK CHANNEL =====
   if (interaction.commandName === "set_feedback_channel") {
 
     const channel =
@@ -595,7 +610,8 @@ After payment, send payment screenshot here for verification ✅`,
 
 ✅ Order Completed
 🧾 Invoice Sent Successfully
-⭐ Leave review using /feedback
+⭐ Feel free to leave a review using /feedback
+💎 We appreciate your support
 🚀 Enjoy your purchase!`
       );
 
@@ -675,9 +691,19 @@ Enjoy shopping with us 💰`
     embeds: [embed]
   });
 
+  try {
+    await member.send(
+`👑 Welcome to ${STORE_NAME}!
+
+Enjoy shopping with us 💰`
+    );
+  } catch (err) {
+    console.log("DM closed");
+  }
+
 });
 
-// ===== COMMANDS =====
+// ===== SLASH COMMANDS =====
 const commands = [
 
   new SlashCommandBuilder()
@@ -768,7 +794,7 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("send_tos")
-    .setDescription("Send TOS system")
+    .setDescription("Send store TOS")
 
 ].map(cmd => cmd.toJSON());
 
