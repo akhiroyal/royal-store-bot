@@ -52,9 +52,6 @@ const WELCOME_CHANNEL_ID = "1443404889894948974";
 const UPI_ID = "bossakhil53@okicici";
 const STORE_NAME = "Royal Store";
 
-const GIF_URL =
-"https://media1.tenor.com/m/TR0cAewt72UAAAAC/the-avengers-marvel.gif";
-
 // ===== VARIABLES =====
 let orderCount = 0;
 let feedbackChannel = null;
@@ -149,7 +146,7 @@ client.on("messageCreate", async (msg) => {
 
 💳 Amount: ₹${amount}
 
-After payment, send payment screenshot here for verification ✅`,
+After payment, send screenshot here ✅`,
       files: [attachment]
     });
   }
@@ -167,19 +164,19 @@ client.on("interactionCreate", async interaction => {
     // ===== BOOSTS =====
     if (value === "boosts") {
 
-      const embed = new EmbedBuilder()
-        .setColor("#ff00aa")
-        .setTitle("<a:Boosters:1443793092028137524> Server Boosts TOS")
-        .setDescription(
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setColor("#ff00aa")
+            .setTitle("<a:Boosters:1443793092028137524> Server Boosts TOS")
+            .setDescription(
 `• No warranty on revokes
 • No Refund Or Replace On AntiBot Bans
 • Full Warranty If Mentioned Only
 • Revoke Warranty If Mentioned Only
 • Rep Warranty If Mentioned Only`
-        );
-
-      return interaction.reply({
-        embeds: [embed],
+            )
+        ],
         ephemeral: true
       });
     }
@@ -187,18 +184,18 @@ client.on("interactionCreate", async interaction => {
     // ===== NITRO IDS =====
     if (value === "nitroids") {
 
-      const embed = new EmbedBuilder()
-        .setColor("#5865F2")
-        .setTitle("<a:nitro:1505129726212177960> Nitro IDs / Discord Accounts TOS")
-        .setDescription(
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setColor("#5865F2")
+            .setTitle("<a:nitro:1505129726212177960> Nitro IDs / Discord Accounts TOS")
+            .setDescription(
 `• Video proof required
 • Must change email & password after delivery
 • No warranty on Discord lock or bans
 • No warranty if Discord revokes nitro`
-        );
-
-      return interaction.reply({
-        embeds: [embed],
+            )
+        ],
         ephemeral: true
       });
     }
@@ -206,17 +203,17 @@ client.on("interactionCreate", async interaction => {
     // ===== METHODS =====
     if (value === "methods") {
 
-      const embed = new EmbedBuilder()
-        .setColor("#00aeff")
-        .setTitle("<a:bot_developer:1444508717994348705> Methods / Tools TOS")
-        .setDescription(
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setColor("#00aeff")
+            .setTitle("<a:bot_developer:1444508717994348705> Methods / Tools TOS")
+            .setDescription(
 `• No refund if patched
 • Tools are PC only
 • User mistake = no replace`
-        );
-
-      return interaction.reply({
-        embeds: [embed],
+            )
+        ],
         ephemeral: true
       });
     }
@@ -224,18 +221,18 @@ client.on("interactionCreate", async interaction => {
     // ===== MEMBERS =====
     if (value === "members") {
 
-      const embed = new EmbedBuilder()
-        .setColor("#00ff99")
-        .setTitle("<a:DISCORD:1443793884584083538> Discord Members TOS")
-        .setDescription(
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setColor("#00ff99")
+            .setTitle("<a:DISCORD:1443793884584083538> Discord Members TOS")
+            .setDescription(
 `• No warranty against bans/kicks
 • No warranty if Discord bans tokens
 • No refund if server bans tokens
 • No replace if antibots kick tokens`
-        );
-
-      return interaction.reply({
-        embeds: [embed],
+            )
+        ],
         ephemeral: true
       });
     }
@@ -243,21 +240,22 @@ client.on("interactionCreate", async interaction => {
     // ===== GIFTLINKS =====
     if (value === "giftlinks") {
 
-      const embed = new EmbedBuilder()
-        .setColor("#ff66cc")
-        .setTitle("<a:NITRO:1443792698539769930> Nitro Giftlinks TOS")
-        .setDescription(
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setColor("#ff66cc")
+            .setTitle("<a:NITRO:1443792698539769930> Nitro Giftlinks TOS")
+            .setDescription(
 `• Delivery via gift link
 • Auto-claim warranty only if mentioned
 • Must record full video before claiming
 • No warranty for user mistakes
 • No replace without proper proof
 • Validity depends on product mentioned
-• Fake claims will be denied`
-        );
-
-      return interaction.reply({
-        embeds: [embed],
+• Fake claims will be denied
+• We always stay on safe side regarding warranty claims`
+            )
+        ],
         ephemeral: true
       });
     }
@@ -505,72 +503,77 @@ Select category below`
     const filePath =
       `invoice_${Date.now()}.pdf`;
 
-    const doc =
-      new PDFDocument({
-        margin: 40
-      });
+    const doc = new PDFDocument({
+      margin: 50
+    });
 
     const stream =
       fs.createWriteStream(filePath);
 
     doc.pipe(stream);
 
+    // BACKGROUND
+    doc.rect(0, 0, 612, 792)
+      .fill("#0f0f14");
+
+    // HEADER
     doc
-      .fontSize(22)
-      .fillColor("#4F46E5")
-      .text(STORE_NAME, 40, 40);
+      .fillColor("#8B5CF6")
+      .fontSize(28)
+      .text("ROYAL STORE", 50, 50);
 
     doc
-      .fontSize(26)
-      .fillColor("black")
-      .text("INVOICE", 400, 40);
+      .fillColor("#ffffff")
+      .fontSize(18)
+      .text("PAYMENT INVOICE", 50, 90);
 
-    doc.moveTo(40, 85)
-      .lineTo(550, 85)
-      .stroke("#4F46E5");
+    // LINE
+    doc.moveTo(50, 130)
+      .lineTo(550, 130)
+      .strokeColor("#8B5CF6")
+      .stroke();
 
+    // INFO
     doc
+      .fillColor("#ffffff")
       .fontSize(13)
-      .fillColor("black")
-      .text(`Invoice #: ${orderId}`, 40, 110)
-      .text(`Date: ${new Date().toLocaleDateString()}`, 40, 130)
-      .text(`Status: PAID`, 40, 150);
+      .text(`Invoice ID: #${orderId}`, 50, 160)
+      .text(`Customer: ${buyer.username}`, 50, 185)
+      .text(`Date: ${new Date().toLocaleDateString()}`, 50, 210)
+      .text(`Status: SUCCESSFUL`, 50, 235);
+
+    // PRODUCT BOX
+    doc.roundedRect(50, 290, 500, 120, 10)
+      .fill("#1a1a22");
 
     doc
-      .text(`Billed To:`, 320, 110)
-      .text(`${buyer.username}`, 320, 130);
-
-    doc.rect(40, 210, 520, 30)
-      .fill("#4F46E5");
+      .fillColor("#8B5CF6")
+      .fontSize(18)
+      .text("ORDER DETAILS", 70, 315);
 
     doc
-      .fillColor("white")
-      .fontSize(12)
-      .text("Description", 70, 220)
-      .text("Price", 420, 220);
+      .fillColor("#ffffff")
+      .fontSize(14)
+      .text(`Product: ${product}`, 70, 350)
+      .text(`Amount Paid: ₹${amount}`, 70, 380);
+
+    // TOTAL BOX
+    doc.roundedRect(50, 470, 500, 70, 10)
+      .fill("#8B5CF6");
 
     doc
-      .fillColor("black")
-      .fontSize(12)
-      .text(product, 70, 270)
-      .text(`₹${amount}`, 420, 270);
+      .fillColor("#ffffff")
+      .fontSize(20)
+      .text(`TOTAL: ₹${amount}`, 190, 495);
 
-    doc.rect(40, 340, 520, 35)
-      .fill("#111111");
-
+    // FOOTER
     doc
-      .fillColor("white")
-      .fontSize(15)
-      .text("Grand Total", 350, 352)
-      .text(`₹${amount}`, 470, 352);
-
-    doc
-      .fillColor("gray")
-      .fontSize(10)
+      .fillColor("#aaaaaa")
+      .fontSize(11)
       .text(
         "Thank you for shopping with Royal Store ❤️",
-        170,
-        730
+        150,
+        720
       );
 
     doc.end();
@@ -651,28 +654,44 @@ client.on("guildMemberAdd", async member => {
   if (!channel) return;
 
   const embed = new EmbedBuilder()
-    .setColor("#4F46E5")
+    .setColor("#5865F2")
+    .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
     .setTitle(`👑 Welcome to ${STORE_NAME}`)
     .setDescription(
-`Hey ${member} 👋
+`Hey <@${member.id}> 👋
 
 You're member #${member.guild.memberCount} 🎉
 
 Enjoy shopping with us 💰`
     )
-    .setImage(GIF_URL);
+    .setFooter({
+      text: "Royal Store Commerce System"
+    })
+    .setTimestamp();
 
-  channel.send({
+  await channel.send({
     embeds: [embed]
   });
 
   try {
 
-    await member.send(
-`👑 Welcome to ${STORE_NAME}!
+    await member.send({
+      embeds: [
+        new EmbedBuilder()
+          .setColor("#5865F2")
+          .setTitle(`👑 Welcome to ${STORE_NAME}`)
+          .setDescription(
+`Thanks for joining Royal Store 💜
 
-Enjoy shopping with us 💰`
-    );
+🛒 Trusted Marketplace
+⚡ Fast Delivery
+🧾 Automated Invoices
+⭐ Customer Reviews
+
+Enjoy shopping with us 🚀`
+          )
+      ]
+    });
 
   } catch (err) {
     console.log("DM closed");
