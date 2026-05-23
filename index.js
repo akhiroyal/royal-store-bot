@@ -539,8 +539,14 @@ const orderId =
     // ===== STORE LOGO =====
 try {
 
-  doc.image("./logo.png", 50, 35, {
-    width: 80
+  doc
+    .fillColor("#0f0f14")
+    .rect(45, 35, 90, 55)
+    .fill();
+
+  doc.image("./logo.png", 50, 50, {
+    fit: [70, 70],
+    align: "center"
   });
 
 } catch (err) {
@@ -601,7 +607,7 @@ doc
       .fillColor("#ffffff")
       .fontSize(14)
       .text(`Product: ${product}`, 70, 350)
-      .text(`Amount Paid: ₹${amount}`, 70, 380);
+      .text(`Amount Paid: ${amount} rs`, 70, 380);
 
     // TOTAL BOX
     doc.roundedRect(50, 470, 500, 70, 10)
@@ -610,7 +616,7 @@ doc
     doc
       .fillColor("#ffffff")
       .fontSize(20)
-      .text(`TOTAL: ₹${amount}`, 190, 495);
+      .text(`TOTAL: ${amount} rs`, 190, 495);
 
     // FOOTER
     doc
