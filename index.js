@@ -16,6 +16,20 @@ const QRCode = require("qrcode");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const express = require("express");
+const path = require("path");
+
+// ===== DATABASE =====
+const DATA_FILE = path.join(__dirname, "orders.json");
+
+if (!fs.existsSync(DATA_FILE)) {
+  fs.writeFileSync(DATA_FILE, JSON.stringify({
+    orderCount: 0
+  }, null, 2));
+}
+
+const data = JSON.parse(fs.readFileSync(DATA_FILE));
+
+let orderCount = data.orderCount || 0;
 
 // ===== WEB SERVER =====
 const app = express();
@@ -53,7 +67,6 @@ const UPI_ID = "bossakhil53@okicici";
 const STORE_NAME = "Royal Store";
 
 // ===== VARIABLES =====
-let orderCount = 0;
 let feedbackChannel = null;
 
 // ===== READY =====
@@ -486,10 +499,17 @@ Select category below`
   // ===== GIVE INVOICE =====
   if (interaction.commandName === "give_invoice") {
 
-    orderCount++;
+orderCount++;
 
-    const orderId =
-      orderCount.toString().padStart(4, "0");
+data.orderCount = orderCount;
+
+fs.writeFileSync(
+  DATA_FILE,
+  JSON.stringify(data, null, 2)
+);
+
+const orderId =
+  `RS-${new Date().getFullYear()}-${orderCount}`;
 
     const buyer =
       interaction.options.getUser("buyer");
@@ -520,7 +540,7 @@ Select category below`
     doc
       .fillColor("#8B5CF6")
       .fontSize(28)
-      .text("ROYAL STORE", 50, 50);
+      .text("👑 ROYAL STORE", 50, 50);
 
     doc
       .fillColor("#ffffff")
@@ -534,13 +554,18 @@ Select category below`
       .stroke();
 
     // INFO
-    doc
-      .fillColor("#ffffff")
-      .fontSize(13)
-      .text(`Invoice ID: #${orderId}`, 50, 160)
-      .text(`Customer: ${buyer.username}`, 50, 185)
-      .text(`Date: ${new Date().toLocaleDateString()}`, 50, 210)
-      .text(`Status: SUCCESSFUL`, 50, 235);
+doc
+  .fillColor("#ffffff")
+  .fontSize(13)
+  .text(`Invoice ID: ${orderId}`, 50, 160)
+  .text(`Customer: ${buyer.username}`, 50, 185)
+  .text(`Date: ${new Date().toLocaleDateString()}`, 50, 210)
+  .text(`Status: SUCCESSFUL`, 50, 235);
+
+doc
+  .fillColor("#00ff99")
+  .fontSize(12)
+  .text(`Issued By: ${interaction.user.username}`, 50, 260);
 
     // PRODUCT BOX
     doc.roundedRect(50, 290, 500, 120, 10)
@@ -657,13 +682,17 @@ client.on("guildMemberAdd", async member => {
     .setColor("#5865F2")
     .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
     .setTitle(`👑 Welcome to ${STORE_NAME}`)
-    .setDescription(
-`Hey <@${member.id}> 👋
+.setDescription(
+`Welcome ${member} 👋
 
-You're member #${member.guild.memberCount} 🎉
+🎉 You are our **${member.guild.memberCount}th** member
 
-Enjoy shopping with us 💰`
-    )
+💎 Trusted Marketplace
+⚡ Fast Delivery
+🧾 Automated Invoices
+
+Enjoy shopping with us 🚀`
+)
     .setFooter({
       text: "Royal Store Commerce System"
     })
