@@ -576,7 +576,11 @@ doc
   .fontSize(13)
   .text(`Invoice ID: ${orderId}`, 50, 160)
   .text(`Customer: ${buyer.username}`, 50, 185)
-  .text(`Date: ${new Date().toLocaleDateString()}`, 50, 210)
+  .text(
+  `Date: ${new Date().toLocaleDateString("en-GB")}`,
+  50,
+  210
+)
   .text(`Status: SUCCESSFUL`, 50, 235);
 
 doc
@@ -613,7 +617,7 @@ doc
       .fillColor("#aaaaaa")
       .fontSize(11)
       .text(
-        "Thank you for shopping with Royal Store ❤️",
+        "Thank you for shopping with Royal Store",
         150,
         720
       );
