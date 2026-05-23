@@ -565,10 +565,6 @@ doc
   .fillColor("#ffffff")
   .fontSize(18)
   .text("PAYMENT INVOICE", 145, 85);
-    doc
-  .fillColor("#FFD700")
-  .fontSize(18)
-  .text("👑", 50, 20);
 
     // LINE
     doc.moveTo(50, 145)
@@ -607,7 +603,7 @@ doc
       .fillColor("#ffffff")
       .fontSize(14)
       .text(`Product: ${product}`, 70, 350)
-      .text(`Amount Paid: ${amount} rs`, 70, 380);
+      .text(`Amount Paid: ${amount}`, 70, 380);
 
     // TOTAL BOX
     doc.roundedRect(50, 470, 500, 70, 10)
@@ -616,7 +612,7 @@ doc
     doc
       .fillColor("#ffffff")
       .fontSize(20)
-      .text(`TOTAL: ${amount} rs`, 190, 495);
+      .text(`TOTAL: ${amount}`, 190, 495);
 
     // FOOTER
     doc
