@@ -540,12 +540,16 @@ const orderId =
     doc
       .fillColor("#8B5CF6")
       .fontSize(28)
-      .text("👑 ROYAL STORE", 50, 50);
+      .text("ROYAL STORE", 50, 50);
 
     doc
       .fillColor("#ffffff")
       .fontSize(18)
       .text("PAYMENT INVOICE", 50, 90);
+    doc
+  .fillColor("#FFD700")
+  .fontSize(18)
+  .text("👑", 50, 20);
 
     // LINE
     doc.moveTo(50, 130)
