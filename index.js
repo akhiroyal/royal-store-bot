@@ -536,24 +536,37 @@ const orderId =
     doc.rect(0, 0, 612, 792)
       .fill("#0f0f14");
 
-    // HEADER
-    doc
-      .fillColor("#8B5CF6")
-      .fontSize(28)
-      .text("ROYAL STORE", 50, 50);
+    // ===== STORE LOGO =====
+try {
 
-    doc
-      .fillColor("#ffffff")
-      .fontSize(18)
-      .text("PAYMENT INVOICE", 50, 90);
+  doc.image("./logo.png", 50, 35, {
+    width: 80
+  });
+
+} catch (err) {
+
+  console.log("Logo not found");
+
+}
+
+// ===== HEADER TEXT =====
+doc
+  .fillColor("#8B5CF6")
+  .fontSize(26)
+  .text("ROYAL STORE", 145, 50);
+
+doc
+  .fillColor("#ffffff")
+  .fontSize(18)
+  .text("PAYMENT INVOICE", 145, 85);
     doc
   .fillColor("#FFD700")
   .fontSize(18)
   .text("👑", 50, 20);
 
     // LINE
-    doc.moveTo(50, 130)
-      .lineTo(550, 130)
+    doc.moveTo(50, 145)
+      .lineTo(550, 145)
       .strokeColor("#8B5CF6")
       .stroke();
 
