@@ -302,7 +302,7 @@ client.on("interactionCreate", async interaction => {
     });
   }
 
-  // ===== FEEDBACK =====
+   // ===== FEEDBACK =====
   if (interaction.commandName === "feedback") {
 
     if (!feedbackChannel) {
@@ -311,9 +311,6 @@ client.on("interactionCreate", async interaction => {
         ephemeral: true
       });
     }
-
-    const user =
-      interaction.options.getUser("user");
 
     const product =
       interaction.options.getString("product");
@@ -343,9 +340,9 @@ client.on("interactionCreate", async interaction => {
           value: `${interaction.user}`
         },
         {
-          name: "🎯 For",
-          value: `${user}`
-        },
+  name: "🎯 For",
+  value: `<@1303751390505734174>`
+},
         {
           name: "⭐ Rating",
           value: `${stars} (${rating}/5)`
@@ -804,15 +801,9 @@ const commands = [
         .setRequired(true)
     ),
 
-  new SlashCommandBuilder()
+    new SlashCommandBuilder()
     .setName("feedback")
     .setDescription("Give feedback")
-    .addUserOption(opt =>
-      opt
-        .setName("user")
-        .setDescription("Seller")
-        .setRequired(true)
-    )
     .addStringOption(opt =>
       opt
         .setName("product")
